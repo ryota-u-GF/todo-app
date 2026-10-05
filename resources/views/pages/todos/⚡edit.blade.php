@@ -26,6 +26,7 @@ new #[Title('Todo を編集')] class extends Component
 
     public function mount(Todo $todo): void
     {
+        abort_unless($todo->isOwnedBy(auth()->user()), 403);
         $this->todo = $todo;
         $this->title = $todo->title;
         $this->memo = $todo->memo;
@@ -36,6 +37,7 @@ new #[Title('Todo を編集')] class extends Component
 
     public function save(): void
     {
+        abort_unless($this->todo->isOwnedBy(auth()->user()), 403);
         $this->todo->update($this->validate());
 
         session()->flash('status', 'Todo を更新しました。');
@@ -45,6 +47,7 @@ new #[Title('Todo を編集')] class extends Component
 
     public function delete(): void
     {
+        abort_unless($this->todo->isOwnedBy(auth()->user()), 403);
         $this->todo->delete();
 
         session()->flash('status', 'Todo を削除しました。');
