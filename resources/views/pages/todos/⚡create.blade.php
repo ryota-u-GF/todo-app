@@ -21,27 +21,23 @@ new #[Title('Todo を登録')] class extends Component
     #[Validate('required|date|after:start_at')]
     public string $due_at = '';
 
-    public bool $submitted = false;
-
     public function save(): void
     {
-        $this->validate();
+        $validated = $this->validate();
 
-        // まだデータベースには保存しない。入力が通ったことを画面に出すだけ
-        $this->submitted = true;
+        // ログイン中のユーザーの Todo として保存する（user_id が自動で入る）
+        auth()->user()->todos()->create($validated);
+
+        session()->flash('status', 'Todo を登録しました。');
+
+        $this->redirectRoute('todos.index', navigate: true);
+        
     }
 };
 ?>
 
 <div class="mx-auto max-w-2xl space-y-6">
         <flux:heading size="xl">Todo を登録</flux:heading>
-
-        @if ($submitted)
-            <flux:callout variant="success" icon="check-circle">
-                <flux:callout.heading>入力内容を受け付けました</flux:callout.heading>
-                <flux:callout.text>{{ $title }}（{{ $category }}）{{ $start_at }} 〜 {{ $due_at }}</flux:callout.text>
-            </flux:callout>
-        @endif
 
         <form wire:submit="save" class="space-y-6">
             <flux:input wire:model="title" label="やること" placeholder="例: 牛乳を買う" />
@@ -53,7 +49,8 @@ new #[Title('Todo を登録')] class extends Component
                 <flux:input wire:model="due_at" label="期限" type="datetime-local" />
             </div>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-3">
+                <flux:button :href="route('todos.index')" variant="ghost" wire:navigate>キャンセル</flux:button>
                 <flux:button type="submit" variant="primary">登録する</flux:button>
             </div>
         </form>
